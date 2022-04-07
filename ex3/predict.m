@@ -9,6 +9,7 @@ num_labels = size(Theta2, 1);
 
 % You need to return the following variables correctly 
 p = zeros(size(X, 1), 1);
+X = [ones(m, 1) X];
 
 % ====================== YOUR CODE HERE ======================
 % Instructions: Complete the following code to make predictions using
@@ -21,11 +22,23 @@ p = zeros(size(X, 1), 1);
 %       can use max(A, [], 2) to obtain the max for each row.
 %
 
+##a(1) = X
+##z2 = Theta1 * a(1)
+##a(2) = g(z(2))
+
+z2 = Theta1 * X';
+a2 = sigmoid(z2);
+
+% Add bias node to a2
+a2Size = size(a2', 1);
+a2 = [ones(a2Size, 1) a2'];
+
+z3 = Theta2 * a2';
+a3 = sigmoid(z3);
 
 
-
-
-
+[max, maxIndices] = max(a3', [], 2);
+p = maxIndices;
 
 
 
