@@ -48,7 +48,10 @@ a2 = [ones(a2Size, 1) a2'];
 
 a3 = sigmoid(Theta2 * a2');
 
-J = (1/m) * sum(sum((-Y' .* log(a3)) - (1 - Y)' .* log(1 - a3)));
+J = (1/m) * sum(sum((-Y' .* log(a3)) - (1 - Y)' .* log(1 - a3))) ... 
+%add regularization
+%Sum all rows, and colums-1 to ignore bias unit
++ (lambda/(2*m)) * ((sum(sum(Theta1(:,2:end).^2))) + (sum(sum(Theta2(:,2:end).^2))));
 % Following the formula below from ex2 using sum to avoid forloop
 ##J = (1/m) * (-y' * log(h) - (1-y)' * log(1-h));
 %
@@ -69,26 +72,38 @@ J = (1/m) * sum(sum((-Y' .* log(a3)) - (1 - Y)' .* log(1 - a3)));
 
 for t = 1:m;
   %Step one
-  a1 = X(t,:)';
-  z2 = Theta1 * a1;
+  a1 = X(t,:);
+  z2 = Theta1 * a1';
   a2 = sigmoid(z2);
-  a2Size = size(a2', 1);
   %Bias node
-  a2 = [ones(a2Size, 1) a2'];
-  a3 = sigmoid(Theta2 * a2'); %sigmoid(z3)
+  a2 = [1 ; a2];
+  a3 = sigmoid(Theta2 * a2); %sigmoid(z3)
   %Step 2
-  d3 = (a3 - Y');
+  d3 = (a3 - Y(t,:)');
   
   %Step 3
   z2 = [1 ; z2];
+
   d2 = (Theta2' * d3) .*  sigmoidGradient(z2);
   %Step 4
+  %Remove d2(0)
   d2 = d2(2:end);
   
-  Theta2_grad = (Theta2_grad + (d3 * a2'));
-  Theta1_grad = (Theta1_grad + (d2 * a1));
+  Theta2_grad += (d3 * a2');
+  Theta1_grad += (d2 * a1);
 endfor
 
+%Step 5
+##Theta1_grad = (1/m) * Theta1_grad;
+##Theta2_grad = (1/m) * Theta2_grad;
+
+%With regularization
+%Don't regularize bias node
+Theta1_grad(:,1) = (1/m) * Theta1_grad(:,1);
+Theta2_grad(:,1) = (1/m) * Theta2_grad(:,1);
+
+Theta1_grad(:,2:end) = ((1/m) * Theta1_grad(:,2:end)) + ((lambda/m) * Theta1(:,2:end));
+Theta2_grad(:,2:end) = ((1/m) * Theta2_grad(:,2:end)) + ((lambda/m) * Theta2(:,2:end));
 % Part 3: Implement regularization with the cost function and gradients.
 %
 %         Hint: You can implement this around the code for
@@ -96,6 +111,7 @@ endfor
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
+
 
 
 
